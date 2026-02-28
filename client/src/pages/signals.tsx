@@ -1,8 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import {
   TrendingUp,
   TrendingDown,
@@ -11,6 +14,7 @@ import {
   Target,
   Shield,
   Zap,
+  RefreshCw,
 } from "lucide-react";
 import type { AiSignal } from "@shared/schema";
 
@@ -105,6 +109,18 @@ export default function Signals() {
   const { data: signals, isLoading } = useQuery<AiSignal[]>({
     queryKey: ["/api/signals"],
   });
+  const { toast } = useToast();
+
+  const refreshMutation = useMutation({
+    mutationFn: () => apiRequest("POST", "/api/refresh/signals"),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/signals"] });
+      toast({ title: "Signals regenerated", description: "AI models analyzed current market conditions" });
+    },
+    onError: (err: Error) => {
+      toast({ title: "Signal generation failed", description: err.message, variant: "destructive" });
+    },
+  });
 
   if (isLoading) {
     return (
@@ -131,9 +147,21 @@ export default function Signals() {
 
   return (
     <div className="flex-1 overflow-auto p-6">
-      <div className="mb-6">
-        <h2 className="text-lg font-bold mb-1">AI-Powered Signals</h2>
-        <p className="text-sm text-muted-foreground">Machine learning models detecting patterns and generating actionable trade ideas</p>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-bold mb-1">AI-Powered Signals</h2>
+          <p className="text-sm text-muted-foreground">Machine learning models detecting patterns and generating actionable trade ideas</p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => refreshMutation.mutate()}
+          disabled={refreshMutation.isPending}
+          data-testid="button-refresh-signals"
+        >
+          <RefreshCw className={`w-4 h-4 mr-2 ${refreshMutation.isPending ? "animate-spin" : ""}`} />
+          {refreshMutation.isPending ? "Generating..." : "Generate New Signals"}
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">

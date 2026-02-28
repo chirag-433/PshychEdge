@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertTradeSchema, insertAlertSchema } from "@shared/schema";
 import { z } from "zod";
+import { refreshMarketData, refreshAISignals } from "./services/marketRefresh";
 
 const createTradeSchema = insertTradeSchema.extend({
   ticker: z.string().min(1),
@@ -156,6 +157,24 @@ export async function registerRoutes(
   app.get("/api/behavioral-logs", async (_req, res) => {
     const logs = await storage.getBehavioralLogs();
     res.json(logs);
+  });
+
+  app.post("/api/refresh/market", async (_req, res) => {
+    try {
+      await refreshMarketData();
+      res.json({ success: true, message: "Market data refreshed" });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/refresh/signals", async (_req, res) => {
+    try {
+      await refreshAISignals();
+      res.json({ success: true, message: "AI signals regenerated" });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
   });
 
   return httpServer;
