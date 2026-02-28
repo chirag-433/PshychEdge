@@ -1,9 +1,12 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sparkline } from "@/components/sparkline";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import {
   TrendingUp,
   TrendingDown,
@@ -13,6 +16,7 @@ import {
   BarChart3,
   ArrowUpRight,
   ArrowDownRight,
+  RefreshCw,
 } from "lucide-react";
 import type { WatchlistItem } from "@shared/schema";
 
@@ -141,6 +145,18 @@ export default function Markets() {
   const { data: watchlist, isLoading } = useQuery<WatchlistItem[]>({
     queryKey: ["/api/watchlist"],
   });
+  const { toast } = useToast();
+
+  const refreshMutation = useMutation({
+    mutationFn: () => apiRequest("POST", "/api/refresh/market"),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/watchlist"] });
+      toast({ title: "Market data refreshed", description: "Live prices updated from all sources" });
+    },
+    onError: (err: Error) => {
+      toast({ title: "Refresh failed", description: err.message, variant: "destructive" });
+    },
+  });
 
   if (isLoading) {
     return (
@@ -165,9 +181,21 @@ export default function Markets() {
 
   return (
     <div className="flex-1 overflow-auto p-6">
-      <div className="mb-6">
-        <h2 className="text-lg font-bold mb-1">Market Feeds</h2>
-        <p className="text-sm text-muted-foreground">Real-time price data, volume analysis, and technical indicators</p>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-bold mb-1">Market Feeds</h2>
+          <p className="text-sm text-muted-foreground">Real-time price data, volume analysis, and technical indicators</p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => refreshMutation.mutate()}
+          disabled={refreshMutation.isPending}
+          data-testid="button-refresh-market"
+        >
+          <RefreshCw className={`w-4 h-4 mr-2 ${refreshMutation.isPending ? "animate-spin" : ""}`} />
+          {refreshMutation.isPending ? "Refreshing..." : "Refresh Live Data"}
+        </Button>
       </div>
 
       <MarketOverview items={watchlist || []} />

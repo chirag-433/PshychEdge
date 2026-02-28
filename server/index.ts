@@ -65,6 +65,9 @@ app.use((req, res, next) => {
   const { seedDatabase } = await import("./seed");
   await seedDatabase().catch(console.error);
 
+  const { startMarketRefreshScheduler } = await import("./services/marketRefresh");
+  startMarketRefreshScheduler();
+
   app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
