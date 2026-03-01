@@ -1,0 +1,2 @@
+# PshychEdge
+Trade Analytical Tool
