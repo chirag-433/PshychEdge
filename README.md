@@ -4,6 +4,13 @@
 
 > _"The market is a device for transferring money from the impatient to the patient."_ — Warren Buffett
 
+## 🎥 Demo Video
+
+See PsychEdge in action:  
+
+👉 [Watch Demo Video](https://drive.google.com/file/d/1Qv99_GFDeqiNz0nl_0DkGLrXOgBDkxLP/view?usp=drive_link)
+📌 Note: This demo highlights key features like AI signals, trade journaling, and behavioral tracking.
+
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)
 ![React](https://img.shields.io/badge/React-61DAFB?style=flat&logo=react&logoColor=black)
 ![Express](https://img.shields.io/badge/Express-000000?style=flat&logo=express&logoColor=white)
