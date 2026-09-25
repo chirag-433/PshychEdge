@@ -4,26 +4,22 @@ import { desc, gte } from "drizzle-orm";
 import { sendTelegramMessage } from "./telegram";
 
 export async function generateMindReport() {
-  // Get the start of the current week (Monday)
   const now = new Date();
   const dayOfWeek = now.getDay();
   const diff = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
   const weekStart = new Date(now.setHours(0, 0, 0, 0));
   weekStart.setDate(diff);
 
-  // Fetch trades from this week
   const weekTrades = await db
     .select()
     .from(trades)
     .where(gte(trades.enteredAt, weekStart));
 
-  // Fetch behavioral logs from this week
   const weekLogs = await db
     .select()
     .from(behavioralLogs)
     .where(gte(behavioralLogs.createdAt, weekStart));
 
-  // Calculate metrics
   const totalTrades = weekTrades.length;
   const closedTrades = weekTrades.filter((t) => t.status === "closed");
   const winningTrades = closedTrades.filter((t) => (t.pnl || 0) > 0);
@@ -51,7 +47,6 @@ export async function generateMindReport() {
 
   const riskRewardRatio = avgLoss > 0 ? +(avgWin / avgLoss).toFixed(2) : 0;
 
-  // Discipline score
   const tradesWithDiscipline = closedTrades.filter(
     (t) => t.disciplineScore != null
   );
@@ -65,7 +60,6 @@ export async function generateMindReport() {
         )
       : 0;
 
-  // Emotion analysis
   const emotionCounts = weekTrades.reduce(
     (acc, t) => {
       const emotion = t.emotionBefore || "unknown";
@@ -82,7 +76,6 @@ export async function generateMindReport() {
     (t) => t.emotionBefore === "revenge"
   ).length;
 
-  // Behavioral flags
   const highSeverityEvents = weekLogs.filter(
     (l) => l.severity === "high"
   ).length;
@@ -90,7 +83,6 @@ export async function generateMindReport() {
     (l) => l.severity === "medium"
   ).length;
 
-  // Build insights
   const insights: string[] = [];
 
   if (winRate >= 60)
@@ -152,7 +144,6 @@ export async function generateMindReport() {
     insights,
   };
 
-  // Save to database
   const [saved] = await db
     .insert(mindReports)
     .values({
@@ -161,7 +152,6 @@ export async function generateMindReport() {
     })
     .returning();
 
-  // Send Telegram notification
   const topInsight = reportData.insights[0] || "No insights this week.";
   const telegramMessage = `
 🧠 <b>PsychEdge Weekly Mind Report</b>

@@ -58,7 +58,6 @@ function AppLayout() {
   const { isConnected, lastMessage } = useWebSocket();
   const { toast } = useToast();
 
-  // Show intervention toasts in real time
   useEffect(() => {
     if (lastMessage?.type === "intervention") {
       toast({
@@ -77,7 +76,6 @@ function AppLayout() {
           <header className="flex items-center justify-between gap-1 p-2 border-b h-11">
             <SidebarTrigger data-testid="button-sidebar-toggle" />
             <div className="flex items-center gap-3">
-              {/* Live connection indicator */}
               <div className="flex items-center gap-1.5">
                 <div className={`w-2 h-2 rounded-full ${
                   isConnected ? "bg-green-500 animate-pulse" : "bg-red-500"

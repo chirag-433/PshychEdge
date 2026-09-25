@@ -64,7 +64,6 @@ app.use((req, res, next) => {
 (async () => {
   await registerRoutes(httpServer, app);
 
-  // WebSocket Server — use dedicated /ws path to avoid Vite HMR conflict
   const wss = new WebSocketServer({ noServer: true });
 
   httpServer.on("upgrade", (request, socket, head) => {
@@ -73,7 +72,6 @@ app.use((req, res, next) => {
         wss.emit("connection", ws, request);
       });
     }
-    // Let Vite handle other upgrade requests (HMR)
   });
 
   wss.on("connection", (ws) => {
@@ -93,7 +91,6 @@ app.use((req, res, next) => {
     });
   });
 
-  // Broadcast market data every 10 seconds
   setInterval(async () => {
     if (wss.clients.size === 0) return;
 
@@ -117,7 +114,6 @@ app.use((req, res, next) => {
     }
   }, 10000);
 
-  // Export wss so routes can use it
   (global as any).__wss = wss;
 
   const { seedDatabase } = await import("./seed");

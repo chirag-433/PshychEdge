@@ -81,7 +81,6 @@ export async function registerRoutes(
           tradeId: trade.id,
         });
 
-        // Push real-time intervention via WebSocket
         const wss = (global as any).__wss;
         if (wss) {
           const alertMsg = JSON.stringify({
